@@ -10,10 +10,14 @@ from bottle import static_file
 from bottle import response
 from bottle import request
 
+# Sækja Python openVR library
+import openvr
+
 # Sækja allskonar annað
 import json
 import urllib.request
 from sys import argv
+from sys import stdout
 import time
 import math
 
@@ -25,6 +29,10 @@ import math
 last_poses_per_second = 0
 poses_this_second = 0
 time_of_last_pose = 0
+
+running = True
+
+poses = []
 
 
 #  ========================================
@@ -60,11 +68,7 @@ def data():
     
     print("Poses per second:",last_poses_per_second)
 
-    trackers = {}
-
     
-
-
 #  ========================================
 #  Static routes
 #  ========================================
@@ -95,3 +99,19 @@ def notFound(error):
 #  ========================================
 
 bottle.run(host="localhost", port=8080, reloader=True, debug=True)
+
+
+#  ========================================
+#  Updata staðsetningar
+#  ========================================
+
+openvr.init(openvr.VRApplication_Background)
+
+while True:
+    poses, game_poses = openvr.VRSystem().GetDeviceToAbsoluteTrackingPose(poses, None)
+    hmd_pose = poses[openvr.k_unTrackedDeviceIndex_Hmd]
+    print(hmd_pose.mDeviceToAbsoluteTracking)
+    stdout.flush()
+    time.sleep(0.2)
+
+openvr.shutdown()
