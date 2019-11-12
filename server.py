@@ -36,6 +36,54 @@ poses = []
 
 
 #  ========================================
+#  Föll
+#  ========================================
+
+def getPosOfDevice(index):
+    
+    absolute_pose = poses[index].mDeviceToAbsoluteTracking
+
+    pos = [
+        absolute_pose[0][3], 
+        absolute_pose[1][3], 
+        absolute_pose[2][3]
+    ]
+
+    return pos
+
+def getControllers():
+    IVRSystem = openvr.IVRSystem()
+
+    print("Searching for controllers...")
+    # Keyrir í gegnum öll tækin tengd við OpenVR
+
+    rightController = None
+    leftController = None
+
+    for index in range(0, openvr.k_unMaxTrackedDeviceCount):
+
+        # Tækið er fjarstýring
+        if IVRSystem.getTrackedDeviceClass(index) == openvr.TrackedDeviceClass_Controller:
+
+            # Ef fjarstýringin sem er verið að lúppa yfir er hægri
+            if IVRSystem.getControllerRoleForTrackedDeviceIndex(index) == openvr.TrackedControllerRole_RightHand:
+                rightController = index
+                print("Right controller found, ID:",rightController)
+            # Ef fjarstýringin sem er verið að lúppa yfir er vinstri
+            elif IVRSystem.getControllerRoleForTrackedDeviceIndex(index) == openvr.TrackedControllerRole_LeftHand:
+                leftController = index
+                print("Left controller found, ID:",leftController)
+        
+        # Stoppa ef það er búið að finna báðar fjarstýringarnar
+        if rightController is not None and leftController is not None:
+            break
+    else:
+        return None
+    
+    return (rightController, leftController)
+
+
+#  ========================================
 #  Venjulegar routes
 #  ========================================
 
@@ -66,9 +114,32 @@ def data():
         last_poses_per_second = poses_this_second
         poses_this_second = 0
     
-    print("Poses per second:",last_poses_per_second)
+    # print("Poses per second:",last_poses_per_second)
 
+
+    #  ====================
+    #  OpenVR
+    #  ====================
+
+    # Uppfæra staðsetningar fjastrýnga og 
+    global poses
+    poses = openvr.VRSystem().getDeviceToAbsoluteTrackingPose(openvr.TrackingUniverseStanding, 0, poses)
     
+    # HMD
+    hmdPos = getPosOfDevice(openvr.k_unTrackedDeviceIndex_Hmd)
+    print(hmdPos)
+
+    # Right controller
+    rightControllerPos = getPosOfDevice(rightController)
+    print(rightControllerPos)
+
+    # Left controller
+    leftControllerPos = getPosOfDevice(leftController)
+    print(leftControllerPos)
+
+    stdout.flush()
+
+
 #  ========================================
 #  Static routes
 #  ========================================
@@ -95,6 +166,16 @@ def notFound(error):
 
 
 #  ========================================
+#  Get OpenVR ready
+#  ========================================
+
+openvr.init(openvr.VRApplication_Background)
+
+# Get controllers
+rightController, leftController = getControllers()
+print(rightController, leftController)
+
+#  ========================================
 #  Keyra bottle
 #  ========================================
 
@@ -105,13 +186,3 @@ bottle.run(host="localhost", port=8080, reloader=True, debug=True)
 #  Updata staðsetningar
 #  ========================================
 
-openvr.init(openvr.VRApplication_Background)
-
-while True:
-    poses, game_poses = openvr.VRSystem().GetDeviceToAbsoluteTrackingPose(poses, None)
-    hmd_pose = poses[openvr.k_unTrackedDeviceIndex_Hmd]
-    print(hmd_pose.mDeviceToAbsoluteTracking)
-    stdout.flush()
-    time.sleep(0.2)
-
-openvr.shutdown()
