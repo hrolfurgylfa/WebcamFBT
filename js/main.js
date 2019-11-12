@@ -1,7 +1,7 @@
 "use strict";
 
-const videoWidth = 600;
-const videoHeight = 400;
+const videoWidth = window.innerWidth;
+const videoHeight = window.innerHeight;
 const video = document.getElementById('video');
 const stopBtn = document.getElementById("stop_btn");
 
