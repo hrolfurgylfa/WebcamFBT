@@ -1,2 +1,6 @@
 # Til þess að uploada ekki client-commandline frá OpenVR-InputEmulator
 client-commandline
+
+# Ignora VSCode og Visual Studio
+.vscode
+.vs

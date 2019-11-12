@@ -3,6 +3,14 @@
 # ====================
 import os
 
+
+# ====================
+#         Global breytur        
+# ====================
+
+path_to_client_commandline = "client-commandline\\"
+
+
 # ====================
 #         Föll        
 # ====================
@@ -22,22 +30,22 @@ def canBeInt(string):
     except ValueError:
         return False
 
-def createVirtualTracker(name, path_to_client_commandline):
-    # Create virtual controller
-    createCommandReturn = cmd(path_to_client_commandline+"client_commandline.exe addcontroller "+name) # Writes virtual device id to stdout
+def createVirtualTracker(name):
+    # Búa til vertual trackerinn
+    createCommandReturn = cmd(path_to_client_commandline+"client_commandline.exe addcontroller "+str(name))
     
-    # Tékka hvort að returnið úr skipuninni fyrir ofan sé tala, ef ekki breakar þetta
+    # Tékka hvort að returnið úr skipuninni fyrir ofan sé tala, ef ekki hættir þetta fall
     try:
         trackerID = int(createCommandReturn)
         print("trackerID:", trackerID)
     except ValueError:
-        print("ERROR, faled at creating controller:", createCommandReturn)
+        print("ERROR, faled at creating tracker:", createCommandReturn)
         return None
 
     # Set device properties
     commands = [
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1000 string lighthouse',
-        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1001 string "Vive Controller MV"',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1001 string "Vive Tracker PVT"',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1003 string vr_controller_vive_1_5',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1004 bool 0',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1005 string HTC',
@@ -46,14 +54,13 @@ def createVirtualTracker(name, path_to_client_commandline):
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1010 bool 1',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1017 uint64 2164327680',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1018 uint64 1465809478',
-        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1029 int32 2',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1029 int32 3',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3001 uint64 12884901895',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3002 int32 1',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3003 int32 3',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3004 int32 0',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3005 int32 0',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3006 int32 0',
-        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3007 int32 0',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5000 string icons',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5001 string {htc}controller_status_off.png',
         path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5002 string {htc}controller_status_searching.gif',
@@ -68,36 +75,69 @@ def createVirtualTracker(name, path_to_client_commandline):
         # Connect the device
         path_to_client_commandline+'client_commandline.exe setdeviceconnection '+str(trackerID)+' 1',
         # Set the device position
-        path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(trackerID)+' -1 -1 -1'
+        path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(trackerID)+' 0 0 0'
     ]
 
     cmd(commands)
 
     return trackerID
 
+def setTrackerLocation(id, x, y, z):
+    output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(id)+' '+str(x)+' '+str(y)+' '+str(z))
+    if output != "": print(output)
+
+def changeTrackerStatus(id, connected):
+    if connected: status = 1
+    else: status = 0
+
+    output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceconnection '+str(id)+' '+str(status))
+    if output != "": print(output)
+
+def getTrackerLocation(id):
+    HMDLocation = [0, 0, 0]
+
 # ====================
 #         Kóði        
 # ====================
-trackerID = createVirtualTracker("controller02", "client-commandline\\")
+hipTrackerID = createVirtualTracker("hip-tracker")
+setTrackerLocation(hipTrackerID, 0, 1, 0)
 
-print("Keeping controller connected")
+rightFootTrackerID = createVirtualTracker("right-foot-tracker")
+setTrackerLocation(rightFootTrackerID, 0.2, 0.1, 0)
 
-positions = [
-    [-1, -1, -1], 
-    [-1.10, -1, -1], 
-    [-1.20, -1, -1], 
-    [-1.30, -1, -1], 
-    [-1.40, -1, -1], 
-    [-1.50, -1, -1], 
-    [-1.40, -1, -1], 
-    [-1.30, -1, -1], 
-    [-1.20, -1, -1], 
-    [-1.10, -1, -1], 
-    [-1, -1, -1]
-]
+leftFootTrackerID = createVirtualTracker("left-foot-tracker")
+setTrackerLocation(leftFootTrackerID, -0.2, 0.1, 0)
 
 while True:
-    for pos in positions:
-        print(cmd("client-commandline\\client_commandline.exe setdeviceposition "+str(trackerID)+" "+str(pos[0])+" "+str(pos[1])+" "+str(pos[2])))
+    user_cmd = input("--> ")
+    
+    if user_cmd == "exit":
+        changeTrackerStatus(hipTrackerID, False)
+        changeTrackerStatus(rightFootTrackerID, False)
+        changeTrackerStatus(leftFootTrackerID, False)
+        break
+
+# print("Keeping controller connected")
+
+# positions = [
+#     [-1, -1, -1], 
+#     [-1.10, -1, -1], 
+#     [-1.20, -1, -1], 
+#     [-1.30, -1, -1], 
+#     [-1.40, -1, -1], 
+#     [-1.50, -1, -1], 
+#     [-1.40, -1, -1], 
+#     [-1.30, -1, -1], 
+#     [-1.20, -1, -1], 
+#     [-1.10, -1, -1], 
+#     [-1, -1, -1]
+# ]
+
+# while True:
+#     for pos in positions:
+#         output = cmd("client-commandline\\client_commandline.exe setdeviceposition "+str(trackerID)+" "+str(pos[0])+" "+str(pos[1])+" "+str(pos[2]))
+
+#         if output != "":
+#             print(output)
 
 print("Done")
