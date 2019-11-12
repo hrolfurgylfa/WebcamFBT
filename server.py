@@ -51,15 +51,15 @@ def getPosOfDevice(index):
 
     return pos
 
-def getControllers():
+def getControllers(quiet=False):
     IVRSystem = openvr.IVRSystem()
 
-    print("Searching for controllers...")
-    # Keyrir í gegnum öll tækin tengd við OpenVR
+    if not quiet: print("Searching for controllers...")
 
     rightController = None
     leftController = None
 
+    # Keyrir í gegnum öll tækin tengd við OpenVR
     for index in range(0, openvr.k_unMaxTrackedDeviceCount):
 
         # Tækið er fjarstýring
@@ -68,11 +68,11 @@ def getControllers():
             # Ef fjarstýringin sem er verið að lúppa yfir er hægri
             if IVRSystem.getControllerRoleForTrackedDeviceIndex(index) == openvr.TrackedControllerRole_RightHand:
                 rightController = index
-                print("Right controller found, ID:",rightController)
+                if not quiet: print("Right controller found, ID:",rightController)
             # Ef fjarstýringin sem er verið að lúppa yfir er vinstri
             elif IVRSystem.getControllerRoleForTrackedDeviceIndex(index) == openvr.TrackedControllerRole_LeftHand:
                 leftController = index
-                print("Left controller found, ID:",leftController)
+                if not quiet: print("Left controller found, ID:",leftController)
         
         # Stoppa ef það er búið að finna báðar fjarstýringarnar
         if rightController is not None and leftController is not None:
@@ -89,12 +89,15 @@ def getControllers():
 
 @route("/")
 def main():
+    print("\nServing website\n")
     with open('index.html', 'r') as content_file:
         content = content_file.read()
     return content
 
 @route("/data", method="POST")
 def data():
+    print("Receiving data...")
+
     try: pose = json.loads(request.body.read())
     except Exception as error: print(error)
 
@@ -139,6 +142,8 @@ def data():
 
     stdout.flush()
 
+    print()
+
 
 #  ========================================
 #  Static routes
@@ -169,20 +174,17 @@ def notFound(error):
 #  Get OpenVR ready
 #  ========================================
 
+print("Getting OpenVR ready")
 openvr.init(openvr.VRApplication_Background)
 
-# Get controllers
+# Sækja fjarstýringar
 rightController, leftController = getControllers()
-print(rightController, leftController)
+
 
 #  ========================================
 #  Keyra bottle
 #  ========================================
 
-bottle.run(host="localhost", port=8080, reloader=True, debug=True)
-
-
-#  ========================================
-#  Updata staðsetningar
-#  ========================================
-
+print("\nStarting bottle")
+bottle.run(host="localhost", port=8080, quiet=True)
+print("\n")
