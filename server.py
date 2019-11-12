@@ -35,6 +35,10 @@ def data():
     # print(pose)
     print("Reciving pose")
 
+    trackers = {}
+
+    
+
 
 #  ========================================
 #  Static routes

@@ -1,2 +1,6 @@
 # Til þess að uploada ekki óvart prufu myndunum
 test-images
+
+# Til þess að ignore Visual Stduio og VSCode
+.vscode
+.vs
