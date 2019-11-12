@@ -98,7 +98,8 @@ async function startDetection() {
                 ctx.fillRect(bodyPart.position.x, bodyPart.position.y, 10, 10);
             });
         }
-
+        
+        // Senda göbgn á Pyton serverinn
         await window.fetch("http://localhost:8080/data", {
             method: 'POST',
             body: JSON.stringify(pose),
