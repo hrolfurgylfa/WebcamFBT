@@ -98,12 +98,8 @@ def main():
 def data():
     print("Receiving data...")
 
-    try: pose = json.loads(request.body.read())
+    try: JSpose = json.loads(request.body.read())
     except Exception as error: print(error)
-
-    # print("\nPose:")
-    # print(pose)
-    # print("Reciving pose")
 
     # Telja hversu oft er verið að uppfæra
     global last_poses_per_second
@@ -130,7 +126,7 @@ def data():
     
     # HMD
     hmdPos = getPosOfDevice(openvr.k_unTrackedDeviceIndex_Hmd)
-    print(hmdPos)
+    # print(hmdPos)
 
     # Right controller
     rightControllerPos = getPosOfDevice(rightController)
@@ -140,8 +136,18 @@ def data():
     leftControllerPos = getPosOfDevice(leftController)
     print(leftControllerPos)
 
-    stdout.flush()
+    #  ====================
+    #  Calculate diffrence 
+    #  ====================
 
+    
+
+
+    #  ====================
+    #  Finish
+    #  ====================
+
+    stdout.flush()
     print()
 
 
