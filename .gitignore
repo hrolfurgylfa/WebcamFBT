@@ -4,3 +4,6 @@ client-commandline
 # Ignora VSCode og Visual Studio
 .vscode
 .vs
+
+# Ignora temporary Json files
+static_json/SteamVRDevices.json

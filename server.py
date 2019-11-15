@@ -9,6 +9,7 @@ from bottle import error
 from bottle import static_file
 from bottle import response
 from bottle import request
+from json import dumps
 
 # Sækja Python openVR library
 import openvr
@@ -130,17 +131,17 @@ def data():
 
     # Right controller
     rightControllerPos = getPosOfDevice(rightController)
-    print(rightControllerPos)
-
+    
     # Left controller
     leftControllerPos = getPosOfDevice(leftController)
-    print(leftControllerPos)
+    
 
     #  ====================
     #  Calculate diffrence 
     #  ====================
 
-    
+    print(rightControllerPos[0], "\t", rightControllerPos[0])
+    print(leftControllerPos[0], "\t", leftControllerPos[1])
 
 
     #  ====================
@@ -149,7 +150,10 @@ def data():
 
     stdout.flush()
     print()
-
+    
+    data = [hmdPos, rightControllerPos, leftControllerPos]
+    with open("static_json/SteamVRDevices.json", "w") as tempOutFile:
+        json.dump(data, tempOutFile)
 
 #  ========================================
 #  Static routes
@@ -162,6 +166,10 @@ def static_js(slod):
 @route("/css/<slod:path>")
 def static_css(slod):
     return static_file(slod, root="css")
+
+@route("/static_json/<slod:path>")
+def static_json(slod):
+    return static_file(slod, root="static_json")
 
 @route("/test_images/<slod:path>")
 def static_test_images(slod):

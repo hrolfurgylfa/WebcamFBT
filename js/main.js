@@ -1,7 +1,7 @@
 "use strict";
 
 const videoWidth = window.innerWidth;
-const videoHeight = window.innerHeight;
+const videoHeight = window.innerWidth/16*9;
 const video = document.getElementById('video');
 const stopBtn = document.getElementById("stop_btn");
 
@@ -100,10 +100,21 @@ async function startDetection() {
         }
         
         // Senda göbgn á Pyton serverinn
-        await window.fetch("http://localhost:8080/data", {
+        let SteamVR_pose = await window.fetch("http://localhost:8080/data", {
             method: 'POST',
             body: JSON.stringify(pose),
         });
+
+        console.log(SteamVR_pose);
+
+        // if (programSettings.logging) {
+        //     console.log(pose);
+            
+        //     ctx.fillStyle = "blue";
+        //     SteamVR_pose.forEach(device => {
+        //         ctx.fillRect(device[0]*100, device[1]*100, 10, 10);
+        //     });
+        // }
 
         requestAnimationFrame(poseDetectionFrame);
         
