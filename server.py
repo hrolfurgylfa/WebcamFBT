@@ -9,18 +9,20 @@ from bottle import error
 from bottle import static_file
 from bottle import response
 from bottle import request
-from json import dumps
+from bottle import redirect
 
 # Sækja Python openVR library
 import openvr
 
 # Sækja allskonar annað
 import json
+from json import dumps
 import urllib.request
 from sys import argv
 from sys import stdout
 import time
 import math
+import pygame
 
 
 #  ========================================
@@ -142,6 +144,8 @@ def data():
 
     print(rightControllerPos[0], "\t", rightControllerPos[0])
     print(leftControllerPos[0], "\t", leftControllerPos[1])
+    
+    
 
 
     #  ====================
@@ -154,6 +158,8 @@ def data():
     data = [hmdPos, rightControllerPos, leftControllerPos]
     with open("static_json/SteamVRDevices.json", "w") as tempOutFile:
         json.dump(data, tempOutFile)
+
+    return redirect("static_json/SteamVRDevices.json")
 
 #  ========================================
 #  Static routes
@@ -193,6 +199,15 @@ openvr.init(openvr.VRApplication_Background)
 
 # Sækja fjarstýringar
 rightController, leftController = getControllers()
+
+
+#  ========================================
+#  Get Pygame ready
+#  ========================================
+
+pygame.init()
+pygame.display.set_caption("WebcamFBT")
+window = pygame.display.set_mode((1280, 720))
 
 
 #  ========================================

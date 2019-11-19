@@ -1,7 +1,7 @@
 "use strict";
 
-const videoWidth = window.innerWidth;
-const videoHeight = window.innerWidth/16*9;
+const videoWidth = 1000;
+const videoHeight = videoWidth/16*9;
 const video = document.getElementById('video');
 const stopBtn = document.getElementById("stop_btn");
 
@@ -87,9 +87,19 @@ async function startDetection() {
             }
         }
         
+        // Senda göbgn á Pyton serverinn
+        let JSONResopnse = await fetch("http://localhost:8080/data", {
+            method: 'POST',
+            body: JSON.stringify(pose),
+        });
+
+        let SteamVR_pose = await fetch(JSONResopnse.url);
+        SteamVR_pose = await SteamVR_pose.json();
+
         // Gera allskonar logging stuff ef það er kveikt á logging í stillingunum
+        // Logga JS pose
         if (programSettings.logging) {
-            console.log(pose);
+            // console.log(pose);
             
             ctx.clearRect(0, 0, videoWidth, videoHeight);
 
@@ -99,22 +109,25 @@ async function startDetection() {
             });
         }
         
-        // Senda göbgn á Pyton serverinn
-        let SteamVR_pose = await window.fetch("http://localhost:8080/data", {
-            method: 'POST',
-            body: JSON.stringify(pose),
-        });
+        // Logga SteamVR pose
+        if (programSettings.logging) {
+            // console.log(SteamVR_pose);
 
-        console.log(SteamVR_pose);
-
-        // if (programSettings.logging) {
-        //     console.log(pose);
             
-        //     ctx.fillStyle = "blue";
-        //     SteamVR_pose.forEach(device => {
-        //         ctx.fillRect(device[0]*100, device[1]*100, 10, 10);
-        //     });
-        // }
+            ctx.fillStyle = "blue";
+            for (i = 0; i < SteamVR_pose.length; i++) {
+                let device = SteamVR_pose[i]
+                let translated_x = (device[0]*900) + (videoWidth / 2)
+                let translated_y = (device[1]*500)
+
+                console.log("Device: "+i+
+                    "\nX: "+translated_x+
+                    "\nY: "+translated_y
+                );
+
+                ctx.fillRect(translated_x, translated_y, 10, 10);
+            }
+        }
 
         requestAnimationFrame(poseDetectionFrame);
         
