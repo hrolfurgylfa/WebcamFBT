@@ -22,7 +22,7 @@ from sys import argv
 from sys import stdout
 import time
 import math
-import pygame
+import os
 
 
 #  ========================================
@@ -36,6 +36,8 @@ time_of_last_pose = 0
 running = True
 
 poses = []
+
+path_to_client_commandline = "client-commandline\\"
 
 
 #  ========================================
@@ -84,6 +86,102 @@ def getControllers(quiet=False):
         return None
     
     return (rightController, leftController)
+
+def cmd(command):
+    if type(command) is list:
+        temp_command_file_name = "temp_commands.bat"
+
+        all_commands = "@echo off\n\n"
+        for singleCommand in command:
+            if all_commands == "":
+                all_commands = singleCommand
+            else:
+                all_commands = all_commands + "\n" + singleCommand
+        
+        with open(temp_command_file_name, "w") as temp_command_file:
+            temp_command_file.write(all_commands)
+
+        output = os.popen(temp_command_file_name).read()
+        if output != "":
+            print("ERROR, failed executing a command in a list: "+output)
+    else:
+        return os.popen(command).read()
+
+def canBeInt(string):
+    try:
+        int(string)
+        return True
+    except ValueError:
+        return False
+
+def createVirtualTracker(name):
+    # Búa til vertual trackerinn
+    createCommandReturn = cmd(path_to_client_commandline+"client_commandline.exe addcontroller "+str(name))
+    
+    # Tékka hvort að returnið úr skipuninni fyrir ofan sé tala, ef ekki hættir þetta fall
+    try:
+        trackerID = int(createCommandReturn)
+        print("trackerID for "+name+":", trackerID)
+    except ValueError:
+        print("ERROR, faled at creating tracker:", createCommandReturn)
+        return None
+
+    # Set device properties
+    commands = [
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1000 string lighthouse',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1001 string "Vive Tracker PVT"',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1003 string vr_controller_vive_1_5',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1004 bool 0',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1005 string HTC',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1006 string "1465809478 htcvrsoftware@firmware-win32 2016-06-13 FPGA 1.6/0/0 VRC 1465809477 Radio 1466630404"',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1007 string "product 129 rev 1.5.0 lot 2000/0/0 0"',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1010 bool 1',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1017 uint64 2164327680',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1018 uint64 1465809478',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 1029 int32 3',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3001 uint64 12884901895',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3002 int32 1',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3003 int32 3',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3004 int32 0',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3005 int32 0',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 3006 int32 0',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5000 string icons',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5001 string {htc}controller_status_off.png',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5002 string {htc}controller_status_searching.gif',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5003 string {htc}controller_status_searching_alert.gif',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5004 string {htc}controller_status_ready.png',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5005 string {htc}controller_status_ready_alert.png',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5006 string {htc}controller_status_error.png',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5007 string {htc}controller_status_standby.png',
+        path_to_client_commandline+'client_commandline.exe setdeviceproperty '+str(trackerID)+' 5008 string {htc}controller_status_ready_low.png',
+        # Let OpenVR know that there is a new device
+        path_to_client_commandline+'client_commandline.exe publishdevice '+str(trackerID),
+        # Connect the device
+        path_to_client_commandline+'client_commandline.exe setdeviceconnection '+str(trackerID)+' 1',
+        # Set the device position
+        path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(trackerID)+' 0 0 0'
+    ]
+
+    cmd(commands)
+
+    return trackerID
+
+def setTrackerLocation(id, x, y = 0, z = 0):
+    if type(x) is list:
+        pos_list = x
+        x = pos_list[0]
+        y = pos_list[1]
+        z = pos_list[2]
+
+    output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(id)+' '+str(x)+' '+str(y)+' '+str(z))
+    if output != "": print(output)
+
+def changeTrackerStatus(id, connected):
+    if connected: status = 1
+    else: status = 0
+
+    output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceconnection '+str(id)+' '+str(status))
+    if output != "": print(output)
 
 
 #  ========================================
@@ -145,7 +243,30 @@ def data():
     print(rightControllerPos[0], "\t", rightControllerPos[0])
     print(leftControllerPos[0], "\t", leftControllerPos[1])
     
-    
+    hip_pos = (
+        JSpose["hip"]["x"] / 600,
+        JSpose["hip"]["y"] / 600
+    )
+
+    #  ====================
+    #  Apply positions to virtual trackers 
+    #  ====================
+
+    hip_foot_virtual_tracker_location = [hip_pos[0], hip_pos[1], hmdPos[2]]
+    left_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
+    right_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
+
+    setTrackerLocation(hip_virtual_tracker, hip_foot_virtual_tracker_location)
+    setTrackerLocation(left_foot_virtual_tracker, left_foot_virtual_tracker_location)
+    setTrackerLocation(right_foot_virtual_tracker, right_foot_virtual_tracker_location)
+
+    # all_commands = [
+    #     path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(hip_virtual_tracker)+' '+str(hip_foot_virtual_tracker_location[0])+' '+str(hip_foot_virtual_tracker_location[1])+' '+str(hip_foot_virtual_tracker_location[2]),
+    #     path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(left_foot_virtual_tracker)+' '+str(left_foot_virtual_tracker_location[0])+' '+str(left_foot_virtual_tracker_location[1])+' '+str(left_foot_virtual_tracker_location[2]),
+    #     path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(right_foot_virtual_tracker)+' '+str(right_foot_virtual_tracker_location[0])+' '+str(right_foot_virtual_tracker_location[1])+' '+str(right_foot_virtual_tracker_location[2])
+    # ]
+
+    # cmd(all_commands)
 
 
     #  ====================
@@ -155,11 +276,12 @@ def data():
     stdout.flush()
     print()
     
-    data = [hmdPos, rightControllerPos, leftControllerPos]
-    with open("static_json/SteamVRDevices.json", "w") as tempOutFile:
-        json.dump(data, tempOutFile)
+    # data = [hmdPos, rightControllerPos, leftControllerPos]
+    # with open("static_json/SteamVRDevices.json", "w") as tempOutFile:
+    #     json.dump(data, tempOutFile)
 
-    return redirect("static_json/SteamVRDevices.json")
+    # return redirect("static_json/SteamVRDevices.json")
+
 
 #  ========================================
 #  Static routes
@@ -199,15 +321,12 @@ openvr.init(openvr.VRApplication_Background)
 
 # Sækja fjarstýringar
 rightController, leftController = getControllers()
+print()
 
-
-#  ========================================
-#  Get Pygame ready
-#  ========================================
-
-pygame.init()
-pygame.display.set_caption("WebcamFBT")
-window = pygame.display.set_mode((1280, 720))
+# Búa til trackers
+right_foot_virtual_tracker = createVirtualTracker("right_foot_virtual_tracker")
+left_foot_virtual_tracker = createVirtualTracker("left_foot_virtual_tracker")
+hip_virtual_tracker = createVirtualTracker("hip_virtual_tracker")
 
 
 #  ========================================
