@@ -7,3 +7,6 @@ client-commandline
 
 # Ignora temporary Json files
 static_json/SteamVRDevices.json
+
+# Ignora temp commands file sem er automatically búið til
+temp_commands.bat
