@@ -3,16 +3,33 @@
 const videoWidth = 1000;
 const videoHeight = videoWidth/16*9;
 const video = document.getElementById('video');
-const stopBtn = document.getElementById("stop_btn");
+
+const settings_container = document.getElementById("settings");
+const loggingBtn = document.getElementById("logging_btn");
+
+const xOffsetInput = document.getElementById("x_offset");
+const yOffsetInput = document.getElementById("y_offset");
 
 let programSettings = {
     stop: false,
-    logging: true
+    logging: false
 };
 const poseSettings = {
     flipHorizontal: true,
     bodyPartConfidenceRequirement: 0.5
 }
+let extraData = [
+    {
+        name: "xOffset",
+        value: 0,
+        done: true
+    },
+    {
+        name: "yOffset",
+        value: 0,
+        done: true
+    }
+]
 
 
 console.log(video);
@@ -117,11 +134,23 @@ async function startDetection() {
             pose.keypoints.push(hip);
         }
 
-        const nececery_locations = {
+        let nececery_locations = {
             "hip": getPartLocationWithName("Hip", pose),
             "left_foot": getPartLocationWithName("leftAnkle", pose),
             "right_foot": getPartLocationWithName("rightAnkle", pose)
         }
+
+        for (let i = 0; i < extraData.length; i++) {
+            if (extraData[i].done === false) {
+                if (nececery_locations["extraData"] === undefined) { nececery_locations["extraData"] = [] }
+                nececery_locations["extraData"].push({
+                    name: extraData[i].name,
+                    value: extraData[i].value
+                });
+                extraData[i].done = true;
+            }
+        }
+            
         
         // Senda göbgn á Pyton serverinn
         let JSONResopnse = await fetch("http://localhost:8080/data", {
@@ -143,6 +172,8 @@ async function startDetection() {
             pose.keypoints.forEach(bodyPart => {
                 ctx.fillRect(bodyPart.position.x, bodyPart.position.y, 10, 10);
             });
+        } else {
+            ctx.clearRect(0, 0, videoWidth, videoHeight);
         }
         
         // Logga SteamVR pose
@@ -172,9 +203,50 @@ async function startDetection() {
     poseDetectionFrame();
 }
 
-stopBtn.addEventListener("click", () => {
-    programSettings.stop = true;
-    document.write("<h1 style='text-align: center;'>Program stopped, reload to restart program</h1>");
+settings_container.addEventListener("click", evt => {
+    switch (evt.target.id) {
+        case "stop_btn":
+            console.log("Stop button pressed");
+            programSettings.stop = true;
+            document.write("<h1 style='text-align: center;'>Program stopped, reload to restart program</h1>");
+            break;
+    
+        case "logging_btn":
+            if (programSettings.logging) {
+                programSettings.logging = false;
+                loggingBtn.classList.add("disabled_btn");
+                loggingBtn.classList.remove("enabled_btn");
+            } else {
+                programSettings.logging = true;
+                loggingBtn.classList.add("enabled_btn");
+                loggingBtn.classList.remove("disabled_btn");
+            }
+            break;
+    }
+});
+
+xOffsetInput.addEventListener("input", evt => {
+    console.log("Updating xOffset");
+    
+    let setting = extraData.filter(data => data.name === "xOffset");
+    if (evt.target.value === "") {
+        setting[0].value = 0;
+    } else {
+        setting[0].value = evt.target.value;
+    }
+    setting[0].done = false;
+});
+
+yOffsetInput.addEventListener("input", evt => {
+    console.log("Updating yOffset");
+    
+    let setting = extraData.filter(data => data.name === "yOffset");
+    if (evt.target.value === "") {
+        setting[0].value = 0;
+    } else {
+        setting[0].value = evt.target.value;
+    }
+    setting[0].done = false;
 });
 
 startDetection();

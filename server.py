@@ -39,6 +39,9 @@ poses = []
 
 path_to_client_commandline = "client-commandline\\"
 
+x_offset = 0
+y_offset = 0
+
 
 #  ========================================
 #  Föll
@@ -202,6 +205,17 @@ def data():
     try: JSpose = json.loads(request.body.read())
     except Exception as error: print(error)
 
+    try:
+        for data in JSpose["extraData"]:
+            if data.name == "xOffset":
+                global x_offset
+                x_offset = data.value
+            elif data.name == "yOffset":
+                global y_offset
+                y_offset = data.value
+    except KeyError:
+        pass
+
     # Telja hversu oft er verið að uppfæra
     global last_poses_per_second
     global poses_this_second
@@ -240,12 +254,12 @@ def data():
     #  Calculate diffrence 
     #  ====================
 
-    print(rightControllerPos[0], "\t", rightControllerPos[0])
-    print(leftControllerPos[0], "\t", leftControllerPos[1])
+    # print(rightControllerPos[0], "\t", rightControllerPos[0])
+    # print(leftControllerPos[0], "\t", leftControllerPos[1])
     
     hip_pos = (
-        JSpose["hip"]["x"] / 600,
-        JSpose["hip"]["y"] / 600
+        (JSpose["hip"]["x"] / 800) + x_offset,
+        (JSpose["hip"]["y"] / 800) + y_offset
     )
 
     #  ====================
