@@ -41,6 +41,8 @@ path_to_client_commandline = "client-commandline\\"
 
 x_offset = 0
 y_offset = 0
+x_multiplier = 800
+y_multiplier = 800
 
 
 #  ========================================
@@ -169,14 +171,14 @@ def createVirtualTracker(name):
 
     return trackerID
 
-def setTrackerLocation(id, x, y = 0, z = 0):
+def setTrackerLocation(tracker_id, x, y = 0, z = 0):
     if type(x) is list:
         pos_list = x
         x = pos_list[0]
         y = pos_list[1]
         z = pos_list[2]
 
-    output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(id)+' '+str(x)+' '+str(y)+' '+str(z))
+    output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(tracker_id)+' '+str(x)+' '+str(y)+' '+str(z))
     if output != "": print(output)
 
 def changeTrackerStatus(id, connected):
@@ -200,7 +202,7 @@ def main():
 
 @route("/data", method="POST")
 def data():
-    print("Receiving data...")
+    # print("Receiving data...")
 
     try: JSpose = json.loads(request.body.read())
     except Exception as error: print(error)
@@ -244,35 +246,78 @@ def data():
     # print(hmdPos)
 
     # Right controller
-    rightControllerPos = getPosOfDevice(rightController)
+    # rightControllerPos = getPosOfDevice(rightController)
     
     # Left controller
-    leftControllerPos = getPosOfDevice(leftController)
+    # leftControllerPos = getPosOfDevice(leftController)
     
 
     #  ====================
     #  Calculate diffrence 
+    #  and apply to virtual
+    #  trackers
     #  ====================
 
     # print(rightControllerPos[0], "\t", rightControllerPos[0])
     # print(leftControllerPos[0], "\t", leftControllerPos[1])
     
-    hip_pos = (
-        (JSpose["hip"]["x"] / 800) + x_offset,
-        (JSpose["hip"]["y"] / 800) + y_offset
-    )
+    if JSpose["hip"]:
+        setTrackerLocation(
+            hip_virtual_tracker,
+            (JSpose["hip"]["x"] / 800) + x_offset,
+            (JSpose["hip"]["y"] / 800) + y_offset,
+            hmdPos[2]
+        )
+
+    if JSpose["right_foot"]:
+        setTrackerLocation(
+            right_foot_virtual_tracker,
+            (JSpose["right_foot"]["x"] / 800) + x_offset,
+            (JSpose["right_foot"]["y"] / 800) + y_offset,
+            hmdPos[2]
+        )
+
+    if JSpose["left_foot"]:
+        setTrackerLocation(
+            left_foot_virtual_tracker,
+            (JSpose["left_foot"]["x"] / 800) + x_offset,
+            (JSpose["left_foot"]["y"] / 800) + y_offset,
+            hmdPos[2]
+        )
+    
+    #  ====================
+    #  Print data
+    #  ====================
+
+    rightFootPos = getPosOfDevice(3)
+    leftFootPos = getPosOfDevice(4)
+    hipFootPos = getPosOfDevice(5)
+
+    print_string = ""
+    print_string = print_string + "HMD Position" + "\n"
+    print_string = print_string + str(hmdPos[0]) + "\t" + str(hmdPos[1]) + "\t" + str(hmdPos[2]) + "\n"
+
+    print_string = print_string + "Right Foot Position" + "\n"
+    print_string = print_string + str(rightFootPos[0]) + "\t" + str(rightFootPos[1]) + "\n"
+
+    print_string = print_string + "Left Foot Position" + "\n"
+    print_string = print_string + str(leftFootPos[0]) + "\t" + str(leftFootPos[1]) + "\n"
+
+    print_string = print_string + "Hip Position" + "\n"
+    print_string = print_string + str(hipFootPos[0]) + "\t" + str(hipFootPos[1]) + "\n"
+
+    print(print_string)
+    
 
     #  ====================
     #  Apply positions to virtual trackers 
     #  ====================
+    
+    # left_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
+    # right_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
 
-    hip_foot_virtual_tracker_location = [hip_pos[0], hip_pos[1], hmdPos[2]]
-    left_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
-    right_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
-
-    setTrackerLocation(hip_virtual_tracker, hip_foot_virtual_tracker_location)
-    setTrackerLocation(left_foot_virtual_tracker, left_foot_virtual_tracker_location)
-    setTrackerLocation(right_foot_virtual_tracker, right_foot_virtual_tracker_location)
+    # setTrackerLocation(left_foot_virtual_tracker, left_foot_virtual_tracker_location)
+    # setTrackerLocation(right_foot_virtual_tracker, right_foot_virtual_tracker_location)
 
     # all_commands = [
     #     path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(hip_virtual_tracker)+' '+str(hip_foot_virtual_tracker_location[0])+' '+str(hip_foot_virtual_tracker_location[1])+' '+str(hip_foot_virtual_tracker_location[2]),
@@ -288,7 +333,7 @@ def data():
     #  ====================
 
     stdout.flush()
-    print()
+    # print()
     
     # data = [hmdPos, rightControllerPos, leftControllerPos]
     # with open("static_json/SteamVRDevices.json", "w") as tempOutFile:
