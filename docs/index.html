@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Webcam FBT</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+</head>
+<body>
+    
+    <div class="jumbotron text-center mb-0">
+        <h1><a href="index.html" class="text-dark" style="text-decoration: none;">Webcam FBT</a></h1>
+        <p>Hrólfur Gylfason</p> 
+    </div>
+    
+    <div class="container" style="margin-top:30px">
+        <div class="row">
+        <div class="col-sm-4">
+            <h3>Hlekkir</h3>
+            <ul class="nav nav-pills flex-column mb-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/hrolfurgylfa/WebcamFBT" target="_blank">Github</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-8">
+            <h2>Um verkefnið</h2>
+            <p class="mb-4">Þetta forrit notar einfalda vefmyndaél til þess að finna staðsetningar fóta manneskju í VR og segir OpenVR að það séu skynjarar á fótunum, þetta gerir það að verkum að þú getur hreyft fæturna í virtual heiminum án þess að nota dýra skynjara.</p>
+            
+            <div class="embed-responsive embed-responsive-16by9 mb-4">
+                <iframe class="embed-responsive-item" src="https://www.youtube-nocookie.com/embed/M9L_pfxD-fQ" rel="0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <h2>Hvað var notað</h2>
+            <p>Forritið finnur staðsetningar lima notandans með <a href="https://github.com/tensorflow/tfjs-models/tree/master/posenet", target="_blank" style="text-decoration: none;">posenet</a> sem er library í JavaScript sem finnur stöðu manneskju í vafra. Ástæðan fyrir því að þetta er notað er bara vegna þess að þetta er eina libraryið sem ég fann sem gerir pose detection og kemur fyrir fram þjálfað, annars hefði ég þurft að þjálfa pose detectionið á mínum eigin gögnum.</p>
+            <p>Annað library sem forritið notar er <a href="https://github.com/matzman666/OpenVR-InputEmulator", target="_blank" style="text-decoration: none;">OpenVR InputEmulator</a> eina ástæðan fyrir að nota þetta forrit er það að þetta gerir það einfaldara að búa til þykjustu fjarstýringar sem OpenVR sér og að færa þær, en í framtíþinni langar mér að nota þriðja libraryið sem þetta forrit notar í að gera það.</p>
+            <p class="mb-4"><a href="https://github.com/cmbruns/pyopenvr", target="_blank" style="text-decoration: none;">pyopenvr</a> leyfir manni að vinna með OpenVR libraryið sem er gert fyrir C++ í Python, það sem þetta gerir núna er bara að fá staðsetningu headsetsins til þess að setja nota sem Z staðsetningu fótanna vegna þess að myndavélin getur bara náð X og Y en í framtíðinni langar mér að nota þetta í staðin fyrir OpenVR InputEmulator vegna þess að það er mun hraða, það hafa ekki komið neinar uppfærslur í OpenVR InputEmulator í tvö ár og þá verður auðveldara að sækja þetta verkefni.</p>
+
+            <h2>Hvernig virkar forritið</h2>
+            <p class="mb-4">Forritið fær fyrst upplýsingar um staðsetningu líkamsparta með <a href="https://github.com/tensorflow/tfjs-models/tree/master/posenet", target="_blank" style="text-decoration: none;">posenet</a> í vafranum, svo þegar JavaScriptið er búið að fá staðsetningu líkamspartana sendir það staðsetningar á local Python webserver, þessi server tekur við staðsetningunum, færir þær yfir í rétt hnit fyrir OpenVR til þess að skilja og notar svo <a href="https://github.com/matzman666/OpenVR-InputEmulator", target="_blank" style="text-decoration: none;">OpenVR InputEmulator</a> til þess að uppfæra staðsetningarnar á hip og fóta trackerunum.</p>
+
+            <h2>Hvernig gekk</h2>
+            <p class="mb-4">Ég held að þetta verkefni hafi gengið frekar vel, forritið nær að reikna staðsetningu notandans frekar nákvæmlega, þetta er auðvitað ekki jafn gott eins og Kinect dýptarmyndavél en miðað við að það þarf bara venjulega vefmyndaél og engan auka búnað virkaði þetta frekar vel. Aðal vandamálið við forritið núna er að forritið uppfærir stöðuna ekki oft, uþb á hverri einu og hálfu sekúndu sem gerir það að verkum að hreyfingar eru ekki raunverulegar fyrir aðra spilara sem sjá þig. Annað vandamál er að það er ekki hægt að hreyfa fæturna nær og fjær myndavélinni, bara til hliðar, upp og niður.</p>
+
+            <h2>Næstu skref</h2>
+            <p class="mb-4">Næstu skref með þetta forrit er það að gera betri leið til þess að stilla það, núna þarf að stilla það með því að slá inn offset og multiplier en mig langar að gera einfaldari leið til þess að stilla forritið. Annað sem þarf að gera er það að skipta yfir í að nota hreint OpenVR í staðin fyrir OpenVR InputEmulator, það mun gera forritið mun hraðara.</p>
+        </div>
+        </div>
+    </div>
+    
+    <div class="text-center mb-0 p-3" style="background-color: #e9ecef;">
+        <p class="mb-0">Viðmótsforritun - Tölvubraut - Tækniskólinn - 2019</p>
+    </div>
+</body>
+</html>
