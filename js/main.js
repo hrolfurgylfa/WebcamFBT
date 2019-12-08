@@ -35,11 +35,19 @@ let extraData = [
 console.log(video);
 
 let getPartLocationWithName = (name, pose) => {
-    let bodyPart = pose.keypoints.find(bodyPart => bodyPart.part = name);
+    let bodyPart = pose.keypoints.find(bodyPart => bodyPart.part === name);
 
     if (bodyPart != undefined) {
         return bodyPart.position;
     } else {
+        const emptyObject = {
+            position: {
+                y: 0,
+                x: 0
+            },
+            part: name,
+            score: 0
+        };
         return null;
     }
 }
@@ -120,7 +128,7 @@ async function startDetection() {
             }
         }
 
-        // Reikna hvar hip er
+        // Reikna hvar miðja hip er
         let hip_points = pose.keypoints.filter(bodyPart => bodyPart.part.slice(-3) === "Hip");
         if (hip_points.length === 2) {
             let hip = {
@@ -134,12 +142,20 @@ async function startDetection() {
             pose.keypoints.push(hip);
         }
 
+        console.log(pose);
+
         let nececery_locations = {
             "hip": getPartLocationWithName("Hip", pose),
             "left_foot": getPartLocationWithName("leftAnkle", pose),
             "right_foot": getPartLocationWithName("rightAnkle", pose)
         }
 
+        // let toPrint = "";
+        // toPrint += "hip        x: "+nececery_locations["hip"]["x"]+"  y: "+nececery_locations["hip"]["y"] + "\n";
+        // toPrint += "left_foot  x: "+nececery_locations["left_foot"]["x"]+"  y: "+nececery_locations["left_foot"]["y"] + "\n";
+        // toPrint += "right_foot x: "+nececery_locations["right_foot"]["x"]+"  y: "+nececery_locations["right_foot"]["y"] + "\n";
+        // console.log(toPrint);        
+        
         for (let i = 0; i < extraData.length; i++) {
             if (extraData[i].done === false) {
                 if (nececery_locations["extraData"] === undefined) { nececery_locations["extraData"] = [] }

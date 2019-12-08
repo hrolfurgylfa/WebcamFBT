@@ -253,79 +253,44 @@ def data():
     
 
     #  ====================
-    #  Calculate diffrence 
-    #  and apply to virtual
-    #  trackers
+    #  Calculate diffrence
+    #  and apply positions
     #  ====================
 
     # print(rightControllerPos[0], "\t", rightControllerPos[0])
     # print(leftControllerPos[0], "\t", leftControllerPos[1])
     
     if JSpose["hip"]:
-        setTrackerLocation(
-            hip_virtual_tracker,
+        setTrackerLocation(hip_virtual_tracker, (
             (JSpose["hip"]["x"] / 800) + x_offset,
             (JSpose["hip"]["y"] / 800) + y_offset,
             hmdPos[2]
-        )
-
-    if JSpose["right_foot"]:
-        setTrackerLocation(
-            right_foot_virtual_tracker,
-            (JSpose["right_foot"]["x"] / 800) + x_offset,
-            (JSpose["right_foot"]["y"] / 800) + y_offset,
-            hmdPos[2]
-        )
-
+        ))
     if JSpose["left_foot"]:
-        setTrackerLocation(
-            left_foot_virtual_tracker,
+        setTrackerLocation(left_foot_virtual_tracker, (
             (JSpose["left_foot"]["x"] / 800) + x_offset,
             (JSpose["left_foot"]["y"] / 800) + y_offset,
             hmdPos[2]
-        )
-    
-    #  ====================
-    #  Print data
-    #  ====================
-
-    rightFootPos = getPosOfDevice(3)
-    leftFootPos = getPosOfDevice(4)
-    hipFootPos = getPosOfDevice(5)
+        ))
+    if JSpose["right_foot"]:
+        setTrackerLocation(right_foot_virtual_tracker, (
+            (JSpose["right_foot"]["x"] / 800) + x_offset,
+            (JSpose["right_foot"]["y"] / 800) + y_offset,
+            hmdPos[2]
+        ))
 
     print_string = ""
-    print_string = print_string + "HMD Position" + "\n"
-    print_string = print_string + str(hmdPos[0]) + "\t" + str(hmdPos[1]) + "\t" + str(hmdPos[2]) + "\n"
-
-    print_string = print_string + "Right Foot Position" + "\n"
-    print_string = print_string + str(rightFootPos[0]) + "\t" + str(rightFootPos[1]) + "\n"
-
-    print_string = print_string + "Left Foot Position" + "\n"
-    print_string = print_string + str(leftFootPos[0]) + "\t" + str(leftFootPos[1]) + "\n"
-
-    print_string = print_string + "Hip Position" + "\n"
-    print_string = print_string + str(hipFootPos[0]) + "\t" + str(hipFootPos[1]) + "\n"
-
+    print_string += "RightController x: "+str(rightControllerPos[0])+"\ty: "+str(rightControllerPos[1])+"\n"
+    print_string += "LeftController  x: "+str(leftControllerPos[0])+"\ty: "+str(leftControllerPos[1])+"\n"
+    print_string += "\n"
+    if JSpose["hip"]:
+        print_string += "HipTracker       x: "+str((JSpose["hip"]["x"] / 800) + x_offset)+"\ty: "+str((JSpose["hip"]["y"] / 800) + x_offset)+"\n"
+    if JSpose["right_foot"]:
+        print_string += "RightFootTracker x: "+str((JSpose["right_foot"]["x"] / 800) + x_offset)+"\ty: "+str((JSpose["right_foot"]["y"] / 800) + x_offset)+"\n"
+    if JSpose["left_foot"]:
+        print_string += "LeftFootTracker  x: "+str((JSpose["left_foot"]["x"] / 800) + x_offset)+"\ty: "+str((JSpose["left_foot"]["y"] / 800) + x_offset)+"\n"
+    print_string += "---------------------------------------------------------------"
     print(print_string)
-    
-
-    #  ====================
-    #  Apply positions to virtual trackers 
-    #  ====================
-    
-    # left_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
-    # right_foot_virtual_tracker_location = [0, 0, hmdPos[2]]
-
-    # setTrackerLocation(left_foot_virtual_tracker, left_foot_virtual_tracker_location)
-    # setTrackerLocation(right_foot_virtual_tracker, right_foot_virtual_tracker_location)
-
-    # all_commands = [
-    #     path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(hip_virtual_tracker)+' '+str(hip_foot_virtual_tracker_location[0])+' '+str(hip_foot_virtual_tracker_location[1])+' '+str(hip_foot_virtual_tracker_location[2]),
-    #     path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(left_foot_virtual_tracker)+' '+str(left_foot_virtual_tracker_location[0])+' '+str(left_foot_virtual_tracker_location[1])+' '+str(left_foot_virtual_tracker_location[2]),
-    #     path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(right_foot_virtual_tracker)+' '+str(right_foot_virtual_tracker_location[0])+' '+str(right_foot_virtual_tracker_location[1])+' '+str(right_foot_virtual_tracker_location[2])
-    # ]
-
-    # cmd(all_commands)
 
 
     #  ====================
