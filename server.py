@@ -41,8 +41,8 @@ path_to_client_commandline = "client-commandline\\"
 
 x_offset = 0
 y_offset = 0
-x_multiplier = 800
-y_multiplier = 800
+x_multiplier = 1
+y_multiplier = 1
 
 
 #  ========================================
@@ -171,12 +171,14 @@ def createVirtualTracker(name):
 
     return trackerID
 
-def setTrackerLocation(tracker_id, x, y = 0, z = 0):
-    if type(x) is list:
-        pos_list = x
+def setTrackerLocation(tracker_id, x_in, y = 0, z = 0):
+    if type(x_in) is list:
+        pos_list = x_in
         x = pos_list[0]
         y = pos_list[1]
         z = pos_list[2]
+    else:
+        x = x_in
 
     output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceposition '+str(tracker_id)+' '+str(x)+' '+str(y)+' '+str(z))
     if output != "": print(output)
@@ -187,6 +189,17 @@ def changeTrackerStatus(id, connected):
 
     output = cmd(path_to_client_commandline+'client_commandline.exe setdeviceconnection '+str(id)+' '+str(status))
     if output != "": print(output)
+
+def map_num(number, range_start, range_end, new_range_start, new_range_end):
+    return (number-range_start)/(range_end-range_start) * (new_range_end-new_range_start) + new_range_start
+
+def calculate_x_part(part_x):
+    mapped_body_part = map_num(part_x, 0, 1000, -1, 1)
+    return (mapped_body_part * x_multiplier) + x_offset
+
+def calculate_y_part(part_y):
+    mapped_body_part = map_num(part_y, 0, 562.5, 1, 0)
+    return (mapped_body_part * y_multiplier) + y_offset
 
 
 #  ========================================
@@ -207,14 +220,21 @@ def data():
     try: JSpose = json.loads(request.body.read())
     except Exception as error: print(error)
 
+    # Go over the extra data in the JSpose
     try:
         for data in JSpose["extraData"]:
-            if data.name == "xOffset":
+            if data["name"] == "xOffset":
                 global x_offset
-                x_offset = data.value
-            elif data.name == "yOffset":
+                x_offset = float(data["value"])
+            elif data["name"] == "yOffset":
                 global y_offset
-                y_offset = data.value
+                y_offset = float(data["value"])
+            elif data["name"] == "xMultiplier":
+                global x_multiplier
+                x_multiplier = float(data["value"])
+            elif data["name"] == "yMultiplier":
+                global y_multiplier
+                y_multiplier = float(data["value"])
     except KeyError:
         pass
 
@@ -246,10 +266,10 @@ def data():
     # print(hmdPos)
 
     # Right controller
-    # rightControllerPos = getPosOfDevice(rightController)
+    rightControllerPos = getPosOfDevice(rightController)
     
     # Left controller
-    # leftControllerPos = getPosOfDevice(leftController)
+    leftControllerPos = getPosOfDevice(leftController)
     
 
     #  ====================
@@ -261,34 +281,37 @@ def data():
     # print(leftControllerPos[0], "\t", leftControllerPos[1])
     
     if JSpose["hip"]:
-        setTrackerLocation(hip_virtual_tracker, (
-            (JSpose["hip"]["x"] / 800) + x_offset,
-            (JSpose["hip"]["y"] / 800) + y_offset,
+        setTrackerLocation(
+            hip_virtual_tracker,
+            calculate_x_part(JSpose["hip"]["x"]),
+            calculate_y_part(JSpose["hip"]["y"]),
             hmdPos[2]
-        ))
+        )
     if JSpose["left_foot"]:
-        setTrackerLocation(left_foot_virtual_tracker, (
-            (JSpose["left_foot"]["x"] / 800) + x_offset,
-            (JSpose["left_foot"]["y"] / 800) + y_offset,
+        setTrackerLocation(
+            left_foot_virtual_tracker,
+            calculate_x_part(JSpose["left_foot"]["x"]),
+            calculate_y_part(JSpose["left_foot"]["y"]),
             hmdPos[2]
-        ))
+        )
     if JSpose["right_foot"]:
-        setTrackerLocation(right_foot_virtual_tracker, (
-            (JSpose["right_foot"]["x"] / 800) + x_offset,
-            (JSpose["right_foot"]["y"] / 800) + y_offset,
+        setTrackerLocation(
+            right_foot_virtual_tracker,
+            calculate_x_part(JSpose["right_foot"]["x"]),
+            calculate_y_part(JSpose["right_foot"]["y"]),
             hmdPos[2]
-        ))
+        )
 
     print_string = ""
     print_string += "RightController x: "+str(rightControllerPos[0])+"\ty: "+str(rightControllerPos[1])+"\n"
     print_string += "LeftController  x: "+str(leftControllerPos[0])+"\ty: "+str(leftControllerPos[1])+"\n"
     print_string += "\n"
     if JSpose["hip"]:
-        print_string += "HipTracker       x: "+str((JSpose["hip"]["x"] / 800) + x_offset)+"\ty: "+str((JSpose["hip"]["y"] / 800) + x_offset)+"\n"
+        print_string += "HipTracker       x: "+str(calculate_x_part(JSpose["hip"]["x"]))+"\ty: "+str(calculate_y_part(JSpose["hip"]["y"]))+"\n"
     if JSpose["right_foot"]:
-        print_string += "RightFootTracker x: "+str((JSpose["right_foot"]["x"] / 800) + x_offset)+"\ty: "+str((JSpose["right_foot"]["y"] / 800) + x_offset)+"\n"
+        print_string += "RightFootTracker x: "+str(calculate_x_part(JSpose["right_foot"]["x"]))+"\ty: "+str(calculate_y_part(JSpose["right_foot"]["y"]))+"\n"
     if JSpose["left_foot"]:
-        print_string += "LeftFootTracker  x: "+str((JSpose["left_foot"]["x"] / 800) + x_offset)+"\ty: "+str((JSpose["left_foot"]["y"] / 800) + x_offset)+"\n"
+        print_string += "LeftFootTracker  x: "+str(calculate_x_part(JSpose["left_foot"]["x"]))+"\ty: "+str(calculate_y_part(JSpose["left_foot"]["y"]))+"\n"
     print_string += "---------------------------------------------------------------"
     print(print_string)
 

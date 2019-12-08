@@ -9,10 +9,13 @@ const loggingBtn = document.getElementById("logging_btn");
 
 const xOffsetInput = document.getElementById("x_offset");
 const yOffsetInput = document.getElementById("y_offset");
+const xMultiplierInput = document.getElementById("x_multiplier");
+const yMultiplierInput = document.getElementById("y_multiplier");
+
 
 let programSettings = {
     stop: false,
-    logging: false
+    logging: true
 };
 const poseSettings = {
     flipHorizontal: true,
@@ -28,8 +31,36 @@ let extraData = [
         name: "yOffset",
         value: 0,
         done: true
+    },
+    {
+        name: "xMultiplier",
+        value: 1,
+        done: true
+    },
+    {
+        name: "yMultiplier",
+        value: 1,
+        done: true
     }
 ]
+
+// Apply the default settings to the settings inputs
+extraData.forEach(setting => {
+    switch (setting.name) {
+        case "xOffset":
+            xOffsetInput.value = setting.value;
+            break;
+        case "yOffset":
+            yOffsetInput.value = setting.value;
+            break;
+        case "xMultiplier":
+            xMultiplierInput.value = setting.value;
+            break;
+        case "yMultiplier":
+            yMultiplierInput.value = setting.value;
+            break;
+    }
+});
 
 
 console.log(video);
@@ -95,18 +126,18 @@ async function startDetection() {
     canvas.height = videoHeight;
     const ctx = canvas.getContext("2d");
     
-    // const net = await posenet.load({
-    //     architecture: 'ResNet50',
-    //     outputStride: 32,
-    //     inputResolution: { width: 257, height: 200 },
-    //     quantBytes: 2
-    // });
     const net = await posenet.load({
-        architecture: 'MobileNetV1',
-        outputStride: 16,
-        inputResolution: { width: 640, height: 480 },
-        multiplier: 0.75
+        architecture: 'ResNet50',
+        outputStride: 32,
+        inputResolution: { width: 257, height: 200 },
+        quantBytes: 2
     });
+    // const net = await posenet.load({
+    //     architecture: 'MobileNetV1',
+    //     outputStride: 16,
+    //     inputResolution: { width: 640, height: 480 },
+    //     multiplier: 0.75
+    // });
     console.log("Posenet hlaðið inn:",net);
     
     const video = await loadVideo();
@@ -257,6 +288,30 @@ yOffsetInput.addEventListener("input", evt => {
     console.log("Updating yOffset");
     
     let setting = extraData.filter(data => data.name === "yOffset");
+    if (evt.target.value === "") {
+        setting[0].value = 0;
+    } else {
+        setting[0].value = evt.target.value;
+    }
+    setting[0].done = false;
+});
+
+xMultiplierInput.addEventListener("input", evt => {
+    console.log("Updating xMultiplier");
+    
+    let setting = extraData.filter(data => data.name === "xMultiplier");
+    if (evt.target.value === "") {
+        setting[0].value = 0;
+    } else {
+        setting[0].value = evt.target.value;
+    }
+    setting[0].done = false;
+});
+
+yMultiplierInput.addEventListener("input", evt => {
+    console.log("Updating xMultiplier");
+    
+    let setting = extraData.filter(data => data.name === "yMultiplier");
     if (evt.target.value === "") {
         setting[0].value = 0;
     } else {
